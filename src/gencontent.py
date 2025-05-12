@@ -8,7 +8,7 @@ def extract_title(markdown):
             return block[2:]
     raise Exception("No h1 header found")
 
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, basepath):
     print(f"Genrating page from {from_path} to {dest_path} using {template_path}")
     # Read the markdown file from from_path and store the contents in a variable
     from_path_contents = ""
@@ -21,7 +21,7 @@ def generate_page(from_path, template_path, dest_path):
     # Convert the markdown file to an html string
     markdown_html = markdown_to_html_node(from_path_contents).to_html()
     title = extract_title(from_path_contents)
-    template_path_contents = template_path_contents.replace("{{ Title }}", title).replace("{{ Content }}", markdown_html)
+    template_path_contents = template_path_contents.replace("{{ Title }}", title).replace("{{ Content }}", markdown_html).replace('href="/', f'href="{basepath}').replace('src="/', f'src="{basepath}')
 
     # Write the new full HTML page to a file at dest_path
     dir_path = os.path.dirname(dest_path)
@@ -31,7 +31,7 @@ def generate_page(from_path, template_path, dest_path):
     with open(dest_path, "w") as file_object:
         file_object.write(template_path_contents)
 
-def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, basepath):
     content_path_contents = os.listdir(dir_path_content)
     for item in content_path_contents:
         src_item_path = os.path.join(dir_path_content, item)
@@ -43,11 +43,11 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
                 # For markdown files, change extension to .html for destination
                 html_filename = item[:-3] + ".html"
                 dest_file_path = os.path.join(dest_dir_path, html_filename)
-                generate_page(src_item_path, template_path, dest_file_path)
+                generate_page(src_item_path, template_path, dest_file_path, basepath)
         elif os.path.isdir(src_item_path):
             # If it's a directory, create the corresponding directory in the destination
             # and then recurse.
             # dest_item_path is the new destination directory for the recursion
             if not os.path.exists(dest_item_path):
                 os.makedirs(dest_item_path)
-            generate_pages_recursive(src_item_path, template_path, dest_item_path)
+            generate_pages_recursive(src_item_path, template_path, dest_item_path, basepath)

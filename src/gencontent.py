@@ -21,7 +21,9 @@ def generate_page(from_path, template_path, dest_path, basepath):
     # Convert the markdown file to an html string
     markdown_html = markdown_to_html_node(from_path_contents).to_html()
     title = extract_title(from_path_contents)
-    template_path_contents = template_path_contents.replace("{{ Title }}", title).replace("{{ Content }}", markdown_html).replace('href="/', f'href="{basepath}').replace('src="/', f'src="{basepath}')
+    template_path_contents = template_path_contents.replace("{{ Title }}", title).replace("{{ Content }}", markdown_html)
+    for path_attr in ['href="/', 'src="/']:
+        template_path_contents = template_path_contents.replace(path_attr, f'{path_attr[:-1]}{basepath}')
 
     # Write the new full HTML page to a file at dest_path
     dir_path = os.path.dirname(dest_path)
